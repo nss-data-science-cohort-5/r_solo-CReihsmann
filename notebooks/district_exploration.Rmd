@@ -176,19 +176,50 @@ alg_diff_total <- districts %>%
 alg2_higher[1,1] / alg_diff_total[1,1] * 100
 ```
 18. You may have noticed that a lot of rows are missing values. Which district has the largest number of missing values? What do you notice about schools that have a lot of missing values?
+  West Tenn School for Deaf has the largest number. Overall, it seems city districts and special schools have the highest number of missing values
 
 ```{r}
 districts %>% 
   rowwise() %>% 
-  mutate(total_na = sum(is.na(.))) %>% 
-  ungroup()
+  mutate(total_na = sum(is.na(c_across(alg_1:dropout)))) %>% 
+  ungroup() %>% 
+  arrange(desc(total_na))
 ```
 
 19. Find the correlation between graduation rate and all other variables. Create a horizontal bar chart showing these correlations. Make sure that your plot is ordered by correlation values. What do you notice from these correlations?
 
+```{r}
+districts %>% 
+  select(alg_1:grad) %>% 
+  cor(use = "pairwise") %>% 
+  as.table() %>% 
+  as.data.frame() %>% 
+  filter(Var1 == "grad") %>% 
+  select(Var2:Freq) %>% 
+  rename(var = Var2, grad_corr = Freq) %>% 
+  arrange(grad_corr) %>% 
+  ggplot(aes(x = fct_inorder(var), y = grad_corr)) +
+  geom_col() +
+  coord_flip()
+ 
+  
+```
+
 20. Create a scatterplot for `grad` vs. `suspended`. Does what you see make sense given your answer from the previous part?
 
+```{r}
+districts %>% 
+  ggplot(aes(x=grad, y=suspended)) +
+  geom_point() +
+  geom_smooth(method = "lm")
+```
+
 21. Create a linear regression model using `lm` with target variable `grad` and predictor variable `suspended`. What R^2 value does this model have? What is the interpretation of this number?
+
+```{r}
+grad_lm <- lm(grad~suspended, data=districts)
+summary(grad_lm)
+```
 
 22. Add the regression line to your scatterplot using `geom_smooth` with `method='lm'`. How do you feel about the regression line after seeing it plotted on the scatterplot?
 
