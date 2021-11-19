@@ -7,7 +7,7 @@ editor_options:
 ```{r}
 library(tidyverse)
 library(readxl)
-
+library(plotly)
 ```
 
 
@@ -278,21 +278,66 @@ testing_data %>%
 
 ```{r}
 algebra_1 <- testing_data %>% 
-  filter(grade == "All Grades", subgroup == "All Students", subject == "Algebra I") %>% 
-  select(school_name, pct_adv)
+  filter(subject == "Algebra I", grade == "All Grades", subgroup == "All Students") %>%
+  select(school_name, alg1_pct_adv = pct_adv)
 
-algebra_2 <- testing_data %>%
-  filter(grade == "All Grades", subgroup == "All Students", subject == "Algebra II") %>% 
-  select(school_name ,pct_adv)
+algebra_2 <- testing_data %>% 
+  filter(subject == "Algebra II", grade == "All Grades", subgroup == "All Students") %>%
+  select(school_name, alg2_pct_adv = pct_adv)
 
 
+algebra_comp <- left_join(algebra_1, algebra_2)
 
-cor(algebra_1, algebra_2)
+algebra_comp %>% 
+  select(alg1_pct_adv, alg2_pct_adv) %>% 
+  cor(use = "pairwise")
+
+```
+```{r}
+algebra_comp %>% 
+  ggplot(aes(x = alg2_pct_adv, y = alg1_pct_adv)) +
+  geom_point() + 
+  geom_smooth(method = "lm")
 ```
 
 28. Find all schools in Rutherford County that have "High School" in their name. For these schools, create a chart (your choice) showing the differences in pct_below_bsc, pct_bsc, pct_prof, and pct_adv for Algebra I when looking across all subgroups and grades.
 
+```{r}
+testing_data %>% 
+  filter(grepl("High School", school_name), subject == "Algebra I", grade == "All Grades", subgroup == "All Students") %>% 
+  select(pct_below_bsc, pct_bsc, pct_prof, pct_adv) %>% 
+  stack() %>% 
+  ggplot(aes(x=ind, y = values)) +
+  geom_boxplot()
+
+
+```
+```{r}
+testing_data %>% 
+  filter(grepl("High School", school_name), subject == "Algebra I", grade == "All Grades", subgroup == "All Students") %>% 
+  select(school_name, pct_below_bsc, pct_bsc, pct_prof, pct_adv) %>% 
+  plot_ly(y = ~pct_below_bsc, type = "box", text = ~school_name, name = "pct_below_bsc") %>% 
+  add_trace(y = ~pct_bsc, name = "pct_bsc") %>% 
+  add_trace(y = ~pct_prof, name = "pct_prof") %>% 
+  add_trace(y = ~pct_adv, name = "pct_adv") 
+
+```
+```{r}
+testing_data %>% 
+  filter(grepl("High School", school_name), subject == "Algebra I", grade == "All Grades", subgroup == "All Students") %>% 
+  select(school_name, pct_below_bsc, pct_bsc, pct_prof, pct_adv) %>% 
+  plot_ly(y = ~school_name, x = ~pct_below_bsc, type = "bar", name = "pct_below_bsc") %>% 
+  add_trace(x = ~pct_bsc, name = "pct_bsc") %>% 
+  add_trace(x = ~pct_prof, name = "pct_prof") %>% 
+  add_trace(x = ~pct_adv, name = "pct_adv") %>% 
+  layout(barmode = "group")
+```
+
 29. I claim that smaller schools do a better job preparing students for Algebra I standardized tests. Find the average number of valid tests (a proxy for the school size) for schools where the pct_prof_adv for Algebra I is greater than 95. Compare this to the average number of valid tests for all schools. In light of this result, how does my claim look?
+
+```{r}
+
+```
 
 30. I also claim that smaller schools do a worse job preparing students for Algebra I standardized tests. Find the average number of valid tests (a proxy for the school size) for schools where the pct_prof_adv for Algebra I is less than 25. Compare this to the average number of valid tests for all schools. In light of this result, how does my claim look now?
 
