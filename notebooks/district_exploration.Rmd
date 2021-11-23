@@ -77,8 +77,11 @@ districts %>%
 
 ```{r}
 districts %>% 
-  ggplot(aes(x = alg_1, y = alg_2)) +
-  geom_point(aes(fill = region), size = 2, colour="black",pch=21)
+  plot_ly(x = ~alg_1, y = ~alg_2, type = "scatter", text = ~system_name, name = ~region)
+
+#districts %>% 
+#  ggplot(aes(x = alg_1, y = alg_2)) +
+#  geom_point(aes(fill = region), size = 2, colour="black",pch=21)
 ```
 
 ```{r}
@@ -128,16 +131,17 @@ districts %>%
   Tend to see districts across regions have roughly the same enrollment rates with some extreme outliers. The region with the most variability is the Mid Cumberland 
 
 ```{r}
-ggplot(districts, aes(x = region, y = enrollment)) +
-  geom_boxplot()
+districts %>% 
+  plot_ly(x = ~region, y = ~enrollment, text = ~system_name, type = "box")
 ```
+
 15. Create a boxplot showing graduation rates per region. Does anything stand out?
   There is a district in the Mid Cumberland with an almost 0% graduation rate
 
 ```{r}
 districts %>% 
-  ggplot(aes(x = region, y = grad)) +
-  geom_boxplot()
+  plot_ly(y = ~grad, x=~region, type = "box", text = ~system_name, name = "pct_below_bsc", color = "red") 
+  
 ```
 
 16. Find the weighted average of graduation rates by region using enrollment as weights. Compare the results you get for the weighted average to what you see from the boxplots. Can you explain any discrepancy?
@@ -156,7 +160,8 @@ districts %>%
 districts %>% 
   mutate(alg_diff = alg_1 - alg_2) %>% 
   ggplot(aes(x = alg_diff)) +
-  geom_histogram()
+  geom_histogram(fill="blueviolet", color="black") +
+  labs(title = "Percent difference b/w Algebra I vs Algebra II", x = "% Difference")
 ```
 ```{r}
 districts %>%
@@ -190,6 +195,7 @@ districts %>%
 
 19. Find the correlation between graduation rate and all other variables. Create a horizontal bar chart showing these correlations. Make sure that your plot is ordered by correlation values. What do you notice from these correlations?
 
+
 ```{r}
 districts %>% 
   select(alg_1:grad) %>% 
@@ -199,7 +205,7 @@ districts %>%
   filter(Var1 == "grad") %>% 
   select(Var2:Freq) %>% 
   rename(var = Var2, grad_corr = Freq) %>% 
-  arrange(grad_corr) %>% 
+  arrange(grad_corr) %>%
   ggplot(aes(x = fct_inorder(var), y = grad_corr)) +
   geom_col() +
   coord_flip()
@@ -302,19 +308,10 @@ algebra_comp %>%
 
 28. Find all schools in Rutherford County that have "High School" in their name. For these schools, create a chart (your choice) showing the differences in pct_below_bsc, pct_bsc, pct_prof, and pct_adv for Algebra I when looking across all subgroups and grades.
 
+
 ```{r}
 testing_data %>% 
-  filter(grepl("High School", school_name), subject == "Algebra I", grade == "All Grades", subgroup == "All Students") %>% 
-  select(pct_below_bsc, pct_bsc, pct_prof, pct_adv) %>% 
-  stack() %>% 
-  ggplot(aes(x=ind, y = values)) +
-  geom_boxplot()
-
-
-```
-```{r}
-testing_data %>% 
-  filter(grepl("High School", school_name), subject == "Algebra I", grade == "All Grades", subgroup == "All Students") %>% 
+  filter(system_name == "Rutherford County", grepl("High School", school_name), subject == "Algebra I", grade == "All Grades", subgroup == "All Students") %>% 
   select(school_name, pct_below_bsc, pct_bsc, pct_prof, pct_adv) %>% 
   plot_ly(y = ~pct_below_bsc, type = "box", text = ~school_name, name = "pct_below_bsc") %>% 
   add_trace(y = ~pct_bsc, name = "pct_bsc") %>% 
@@ -324,7 +321,7 @@ testing_data %>%
 ```
 ```{r}
 testing_data %>% 
-  filter(grepl("High School", school_name), subject == "Algebra I", grade == "All Grades", subgroup == "All Students") %>% 
+  filter(system_name == "Rutherford County", grepl("High School", school_name), subject == "Algebra I", grade == "All Grades", subgroup == "All Students") %>% 
   select(school_name, pct_below_bsc, pct_bsc, pct_prof, pct_adv) %>% 
   plot_ly(y = ~school_name, x = ~pct_below_bsc, type = "bar", name = "pct_below_bsc") %>% 
   add_trace(x = ~pct_bsc, name = "pct_bsc") %>% 
@@ -333,15 +330,64 @@ testing_data %>%
   layout(barmode = "group")
 ```
 
-29. I claim that smaller schools do a better job preparing students for Algebra I standardized tests. Find the average number of valid tests (a proxy for the school size) for schools where the pct_prof_adv for Algebra I is greater than 95. Compare this to the average number of valid tests for all schools. In light of this result, how does my claim look?
+29. I claim that smaller schools do a better job preparing students for Algebra I standardized tests. Find the average number of valid tests (a proxy for the school size) for schools where the pct_prof_adv for Algebra I is greater than 95. Compare this to the average number of valid tests for all schools. In light of this result, how does my claim look? 
+  The claim seems justified as we see those schools with a higher pct_prof_adv is only 37% the number of the mean of valid tests for all schools
 
 ```{r}
-
+testing_data %>% 
+  filter(pct_prof_adv > 95, subject == "Algebra I", grade == "All Grades", subgroup == "All Students") %>% 
+  summarise(mean_valid = mean(valid_tests))
+```
+```{r}
+testing_data %>% 
+  filter(grade == "All Grades", subject == "Algebra I", subgroup == "All Students") %>% 
+  summarise(mean_valid = mean(valid_tests))
 ```
 
 30. I also claim that smaller schools do a worse job preparing students for Algebra I standardized tests. Find the average number of valid tests (a proxy for the school size) for schools where the pct_prof_adv for Algebra I is less than 25. Compare this to the average number of valid tests for all schools. In light of this result, how does my claim look now?
+  Both of this and the claim before seem valid as the mean for this group is ~50% of the total mean
+
+```{r}
+testing_data %>% 
+  filter(pct_prof_adv < 25, subject == "Algebra I", grade == "All Grades", subgroup == "All Students") %>% 
+  summarise(mean_valid = mean(valid_tests))
+```
 
 31. Create a scatterplot showing pct_prov_adv vs. valid_tests. Can you use this to explain the result for numbers 26 and 27?
+  It appears that the majority of 8th graders taking Algebra I occur in smaller schools with the majority of them having a high pct_prof_adv 
+
+```{r}
+testing_data %>% 
+  filter(subject == "Algebra I", grade == "All Grades", subgroup == "All Students") %>%
+  ggplot(aes(x = valid_tests, y = pct_prof_adv)) + 
+  geom_point() +
+  geom_smooth(method = "lm")
+```
+
+```{r}
+testing_data %>% 
+  filter(subject == "Algebra I", grade == "All Grades", subgroup == "All Students", ) %>%
+  mutate(above_95 = pct_prof_adv>95) %>% 
+  ggplot(aes(x = valid_tests, y = pct_prof_adv, color = above_95)) + 
+  geom_point() +
+  geom_smooth(method = "lm")
+```
+```{r}
+testing_data %>% 
+  filter(subject == "Algebra I", grade == "All Grades", subgroup == "All Students") %>%
+  mutate(below_25 = pct_prof_adv<25) %>% 
+  ggplot(aes(x = valid_tests, y = pct_prof_adv, color = below_25)) + 
+  geom_point() +
+  geom_smooth(method = "lm")
+```
+
+```{r}
+testing_data %>% 
+  filter(subject == "Algebra I", grade == c(8, 9), subgroup == "All Students") %>% 
+  ggplot(aes(x = valid_tests, y = pct_prof_adv, color = grade)) + 
+  geom_point() + 
+  geom_smooth(method = "lm")
+```
 
 If you finish all of the above questions, continue to explore the two datasets and see what else interesting you can find.
 
