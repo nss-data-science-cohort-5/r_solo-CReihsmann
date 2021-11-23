@@ -100,6 +100,8 @@ ggplot(districts, aes(x = alg_1, y = alg_2)) +
 
 ggplot(total_enrollment, aes(x = region, y = sum_enroll)) + 
   geom_col(color = "black")
+
+
 ```
 
 11. When creating this bar chart you may have noticed that some districts have missing enrollment values. For how many districts is this the case?
@@ -161,12 +163,12 @@ districts %>%
   
 
 ```{r}
-districts %>% 
+ggplotly(districts %>% 
   mutate(alg_diff = alg_1 - alg_2) %>% 
   ggplot(aes(x = alg_diff)) +
   geom_histogram(fill="blueviolet", color="black") +
   labs(title = "Percent difference b/w Algebra I vs Algebra II", x = "% Difference") +
-  theme(plot.title = element_text(hjust = 0.5))
+  theme(plot.title = element_text(hjust = 0.5)))
 ```
 ```{r}
 districts %>%
@@ -189,12 +191,12 @@ alg_diff_total <- districts %>%
 alg2_higher[1,1] / alg_diff_total[1,1] * 100
 ```
 ```{r}
-districts %>% 
+ggplotly(districts %>% 
   mutate(alg_diff = eng_2 - eng_3) %>% 
   ggplot(aes(x = alg_diff)) +
   geom_histogram(fill="darkgreen", color="black") +
   labs(title = "Percent difference b/w English II vs English III", x = "% Difference") +
-  theme(plot.title = element_text(hjust = 0.5))
+  theme(plot.title = element_text(hjust = 0.5)))
 ```
 ```{r}
 districts %>%
@@ -233,7 +235,7 @@ districts %>%
 
 
 ```{r}
-districts %>% 
+ggplotly(districts %>% 
   select(alg_1:grad) %>% 
   cor(use = "pairwise") %>% 
   as.table() %>% 
@@ -246,7 +248,7 @@ districts %>%
   geom_col() +
   coord_flip() +
   labs(title = "Grad correlation", y = "correlation", x = "variable") +
-  theme(plot.title = element_text(hjust = 0.5))
+  theme(plot.title = element_text(hjust = 0.5)))
 
   
 ```
@@ -271,12 +273,12 @@ summary(grad_lm)
 22. Add the regression line to your scatterplot using `geom_smooth` with `method='lm'`. How do you feel about the regression line after seeing it plotted on the scatterplot?
 
 ```{r}
-districts %>% 
+ggplotly(districts %>% 
   ggplot(aes(x=grad, y=suspended)) +
   geom_point() +
   geom_smooth(method = "lm") +
   labs(title = "Graduation rate vs Suspension rate", x = "Graduation Rate", y = "Suspension Rate") +
-  theme(plot.title = element_text(hjust = 0.5))
+  theme(plot.title = element_text(hjust = 0.5)))
 ```
 
 **Continued Exploration and Practice**
@@ -342,12 +344,12 @@ algebra_comp %>%
 
 ```
 ```{r}
-algebra_comp %>% 
+ggplotly(algebra_comp %>% 
   ggplot(aes(x = alg2_pct_adv, y = alg1_pct_adv)) +
   geom_point() + 
   geom_smooth(method = "lm") +
   labs(title = "% Algebra 1 advanced vs. % Algebra 2 advanced") +
-  theme(plot.title = element_text(hjust = 0.5))
+  theme(plot.title = element_text(hjust = 0.5)))
 ```
 
 28. Find all schools in Rutherford County that have "High School" in their name. For these schools, create a chart (your choice) showing the differences in pct_below_bsc, pct_bsc, pct_prof, and pct_adv for Algebra I when looking across all subgroups and grades.
@@ -400,36 +402,36 @@ testing_data %>%
   It appears that the majority of 8th graders taking Algebra I occur in smaller schools with the majority of them having a high pct_prof_adv 
 
 ```{r}
-testing_data %>% 
+ggplotly(testing_data %>% 
   filter(subject == "Algebra I", grade == "All Grades", subgroup == "All Students") %>%
   ggplot(aes(x = valid_tests, y = pct_prof_adv)) + 
   geom_point() +
-  geom_smooth(method = "lm")
+  geom_smooth(method = "lm"))
 ```
 
 ```{r}
-testing_data %>% 
+ggplotly(testing_data %>% 
   filter(subject == "Algebra I", grade == "All Grades", subgroup == "All Students", ) %>%
   mutate(above_95 = pct_prof_adv>95) %>% 
   ggplot(aes(x = valid_tests, y = pct_prof_adv, color = above_95)) + 
   geom_point() +
-  geom_smooth(method = "lm")
+  geom_smooth(method = "lm"))
 ```
 ```{r}
-testing_data %>% 
+ggplotly(testing_data %>% 
   filter(subject == "Algebra I", grade == "All Grades", subgroup == "All Students") %>%
   mutate(below_25 = pct_prof_adv<25) %>% 
   ggplot(aes(x = valid_tests, y = pct_prof_adv, color = below_25)) + 
   geom_point() +
-  geom_smooth(method = "lm")
+  geom_smooth(method = "lm"))
 ```
 
 ```{r}
-testing_data %>% 
+ggplotly(testing_data %>% 
   filter(subject == "Algebra I", grade == c(8, 9), subgroup == "All Students") %>% 
   ggplot(aes(x = valid_tests, y = pct_prof_adv, color = grade)) + 
   geom_point() + 
-  geom_smooth(method = "lm")
+  geom_smooth(method = "lm")) 
 ```
 
 If you finish all of the above questions, continue to explore the two datasets and see what else interesting you can find.
