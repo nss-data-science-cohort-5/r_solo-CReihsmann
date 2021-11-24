@@ -67,9 +67,9 @@ districts %>%
   Left skewed
 
 ```{r}
-districts %>% 
+ggplotly(districts %>% 
   ggplot(aes(x = grad)) +
-  geom_histogram(bins = 40, fill = "red", color = "white")
+  geom_histogram(bins = 40, fill = "red", color = "white"))
 ```
 
 9. Create a scatter plot to compare alg_1 proficiency rates to alg_2 rates. What do you notice? Facet this plot by region. Does anything stand out when you facet the plots?
@@ -98,8 +98,10 @@ ggplot(districts, aes(x = alg_1, y = alg_2)) +
   group_by(region) %>% 
   summarize(sum_enroll = sum(enrollment, na.rm = TRUE))
 
-ggplot(total_enrollment, aes(x = region, y = sum_enroll)) + 
-  geom_col(color = "black")
+ggplotly(ggplot(total_enrollment, aes(x = region, y = sum_enroll)) + 
+  geom_col(color = "black") +
+  coord_flip() +
+  labs(x = "Region", y = "Total Enrollment"))
 
 
 ```
@@ -314,14 +316,17 @@ testing_data %>%
 ```
 
 26. Which grade has the highest pct_adv for Algebra I? Plot the average pct_adv per grade level as a bar chart. Make sure that the bars are ordered by grade level.
+  Grade 9
 
 ```{r}
 testing_data %>% 
   group_by(grade) %>% 
-  filter(grade != "All Grades", subject == "Algebra I") %>% 
+  filter(grade == c(8:12), subject == "Algebra I", subgroup == "All Students") %>% 
   summarize(mean_pct_avg = mean(pct_adv, na.rm = TRUE)) %>% 
-  arrange(desc(mean_pct_avg)) %>% 
-  head(1)
+  arrange(desc(grade)) %>% 
+  ggplot(aes(x = fct_inorder(grade), y = mean_pct_avg, color = grade)) +
+  geom_col(color = "black") +
+  labs(title = "Percent Advanced: Algebra I", x = "Grade")
 ```
 
 27. Find the correlation between pct_adv for Algebra I and pct_adv for Algebra II by school. Create a scatterplot showing Algebra II scores vs. Algebra I scores by school.
